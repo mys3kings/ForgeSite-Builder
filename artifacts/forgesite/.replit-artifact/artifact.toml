@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "ForgeSite"
+description = "An AI website builder that turns natural-language prompts into responsive React sites with a live preview, local history, and ZIP export."
+version = "1.0.0"
+id = "artifacts/forgesite"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25313
+
+[services.development]
+run = "pnpm --filter @workspace/forgesite run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/forgesite", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/forgesite/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25313"
+BASE_PATH = "/"

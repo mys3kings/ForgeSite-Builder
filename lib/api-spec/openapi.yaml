@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: forge
+    description: AI website generation
 paths:
   /healthz:
     get:
@@ -24,6 +26,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /forge/generate:
+    post:
+      operationId: generateForgeSite
+      tags: [forge]
+      summary: Generate a React website component
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateSiteInput"
+      responses:
+        "200":
+          description: Generated React component
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateSiteResponse"
+        "400":
+          description: Invalid prompt
+        "502":
+          description: Gemini generation failed
 components:
   schemas:
     HealthStatus:
@@ -33,4 +57,20 @@ components:
           type: string
       required:
         - status
+    GenerateSiteInput:
+      type: object
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+          maxLength: 4000
+      required:
+        - prompt
+    GenerateSiteResponse:
+      type: object
+      properties:
+        code:
+          type: string
+      required:
+        - code
 
