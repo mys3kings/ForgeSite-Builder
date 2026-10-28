@@ -1,0 +1,1 @@
+- [Vercel deployment target](vercel-deployment-target.md) — ForgeSite is intended to deploy on Vercel; account for this in deployment changes.

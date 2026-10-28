@@ -1,15 +1,23 @@
-# [Project name]
+# ForgeSite
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+ForgeSite turns natural-language website prompts into responsive React components with a live preview, local build history, and ZIP export.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm install --frozen-lockfile` — install the pnpm workspace dependencies
+- Run the `artifacts/forgesite: web` and `artifacts/api-server: API Server` workflows for the app and API.
+- `pnpm run typecheck` — typecheck the workspace
+- `pnpm run build` — typecheck and build the workspace packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and schemas from the OpenAPI spec
+- The API requires `GEMINI_API_KEY` for website generation. Store it as a secret; never put it in frontend code.
+- The current ForgeSite routes do not require a database. Database tooling under `lib/db` needs `DATABASE_URL` when used.
+
+## Deployment
+
+- The deployment target is Vercel.
+- The current Replit preview runs the Vite frontend and Express API as separate managed services; the proxy routes `/api/*` to the API.
+- No Vercel-specific deployment configuration is present yet. The Vercel deployment must provide a production API route or URL for the frontend's `/api/*` requests, and configure `GEMINI_API_KEY` on the server side.
+- Keep Replit preview workflow settings separate from Vercel's build and runtime configuration.
 
 ## Stack
 
@@ -22,23 +30,17 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
-
-## Architecture decisions
-
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- `artifacts/forgesite` — React + Vite ForgeSite interface and Sandpack preview.
+- `artifacts/api-server` — Express API, health check, and Gemini website-generation route.
+- `lib/api-spec/openapi.yaml` — API contract; generated clients and schemas live in `lib/api-client-react` and `lib/api-zod`.
+- `lib/db` — Drizzle/PostgreSQL setup for database-backed features.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The Vite app expects `PORT` and `BASE_PATH`; the managed Replit workflow supplies them.
+- The Replit preview depends on the API service being available at `/api`.
+- Generated sites and history are browser-local; the app does not persist builds to the database.
+- Vercel deployment still needs an explicit frontend-to-API routing strategy; the Replit artifact proxy does not configure Vercel.
 
 ## Pointers
 
