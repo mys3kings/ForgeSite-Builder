@@ -16,7 +16,7 @@ router.post("/forge/generate", async (req, res): Promise<void> => {
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env["GEMINI_API_KEY"]?.trim();
   if (!apiKey) {
     req.log.error("GEMINI_API_KEY is not configured");
     res.status(500).json({ error: "Gemini is not configured on the server." });
@@ -24,9 +24,10 @@ router.post("/forge/generate", async (req, res): Promise<void> => {
   }
 
   try {
-    const models = ["gemini-3.8-flash", "gemini-2.5-flash"];
+    const model = "gemini-3.8-flash";
+    const maxAttempts = 2;
     let response: Response | undefined;
-    for (const [index, model] of models.entries()) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
         {
@@ -42,16 +43,15 @@ router.post("/forge/generate", async (req, res): Promise<void> => {
         }),
         },
       );
-      if (response.ok) {
-        if (index > 0) {
-          req.log.info({ model }, "Generated website with fallback model");
-        }
+      if (response.ok) break;
+      if (![429, 503].includes(response.status) || attempt === maxAttempts) {
         break;
       }
-      if (![429, 503].includes(response.status) || index === models.length - 1) {
-        break;
-      }
-      req.log.warn({ model, status: response.status }, "Gemini model is busy");
+      req.log.warn(
+        { model, status: response.status, attempt },
+        "Gemini model is busy; retrying",
+      );
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     if (!response?.ok) {
